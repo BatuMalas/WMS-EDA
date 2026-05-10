@@ -1,0 +1,32 @@
+/* Fixed Layout */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7fe;
+}
+
+.sidebar {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  height: calc(100vh - 56px);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.main-content {
+  margin-left: 250px;
+  padding-top: 20px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+}

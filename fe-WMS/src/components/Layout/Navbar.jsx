@@ -1,0 +1,67 @@
+import React from "react";
+import {
+  Navbar as BSNavbar, Container, Nav, Badge, Dropdown,
+} from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import { FaWarehouse, FaBell, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
+
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <BSNavbar bg="white" variant="light" expand="lg" className="border-bottom fixed-top"
+      style={{ zIndex: 1030, height: "64px" }}>
+      <Container fluid className="px-4 py-2">
+        <BSNavbar.Brand as={Link} to="/" className="fw-bold text-dark d-flex align-items-center">
+          <div className="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style={{ width: 32, height: 32 }}>
+            <FaWarehouse size={16} />
+          </div>
+          WMS
+        </BSNavbar.Brand>
+
+        <BSNavbar.Toggle aria-controls="navbar-nav" />
+
+        <BSNavbar.Collapse id="navbar-nav" className="justify-content-end">
+          <Nav className="align-items-center">
+            <Nav.Link as={Link} to="/notifications" className="position-relative me-4 text-muted">
+              <FaBell size={20} />
+              <Badge bg="danger" pill
+                className="position-absolute top-0 start-100 translate-middle border border-white"
+                style={{ fontSize: "9px" }}>
+                1
+              </Badge>
+            </Nav.Link>
+
+            <Dropdown align="end">
+              <Dropdown.Toggle variant="link" className="d-flex align-items-center text-decoration-none text-dark p-0 border-0">
+                <FaUserCircle className="me-2" />
+                <span>{user?.name || "User"}</span>
+                {user?.role && (
+                  <Badge bg={user.role === "admin" ? "danger" : user.role === "manajer" ? "warning" : "info"} className="ms-2" style={{ fontSize: "10px" }}>
+                    {user.role}
+                  </Badge>
+                )}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                <Dropdown.Item as={Link} to="/profile">Profile</Dropdown.Item>
+                <Dropdown.Item as={Link} to="/settings">Settings</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={handleLogout} className="text-danger">
+                  <FaSignOutAlt className="me-2" />Logout
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Nav>
+        </BSNavbar.Collapse>
+      </Container>
+    </BSNavbar>
+  );
+}

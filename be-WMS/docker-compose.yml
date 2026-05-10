@@ -1,0 +1,129 @@
+# =============================================================
+# WMS Modular Monolith — Docker Compose
+# =============================================================
+# Variabel Kontrol Tesis:
+#   - App service dibatasi 2 vCPU dan 2GB RAM
+#   - Sesuai kondisi pengujian beban Bab III
+# =============================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wms-app
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:RpEzPp1B9yud2sE1FKSWJ0KL3B+8G8/pdRfZ6iWBrvs=
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: wms_db_eda
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      JWT_SECRET: K4Si9vNYmdFYtwfMrF7IR1yq9JxsrgcJXlresry5b2JdwJ4waHFZuDpwfdeUatOp
+      JWT_ALGO: HS256
+      SESSION_DRIVER: cookie
+      CACHE_STORE: array
+      QUEUE_CONNECTION: sync
+    volumes:
+      - .:/var/www
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy
+    networks:
+      - wms-network
+    # ─── Resource Limits (Variabel Kontrol Tesis) ─────────────
+    # Syntax yang benar untuk docker compose (bukan Swarm):
+    #   cpus dan mem_limit di level service langsung
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # 2 vCPU
+          memory: 2G       # 2 GB RAM
+    # Untuk docker compose v2 style (lebih kompatibel):
+    cpus: 2.0
+    mem_limit: 2g
+    memswap_limit: 2g
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wms-worker
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --timeout=90
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:RpEzPp1B9yud2sE1FKSWJ0KL3B+8G8/pdRfZ6iWBrvs=
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: wms_db_eda
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+      JWT_SECRET: K4Si9vNYmdFYtwfMrF7IR1yq9JxsrgcJXlresry5b2JdwJ4waHFZuDpwfdeUatOp
+      JWT_ALGO: HS256
+    volumes:
+      - .:/var/www
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - wms-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+    cpus: 2.0
+    mem_limit: 2g
+    memswap_limit: 2g
+
+  redis:
+    image: redis:alpine
+    container_name: wms-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - wms-network
+
+#   mysql:
+#     image: mysql:8.0
+#     container_name: wms-mysql-eda
+#     restart: unless-stopped
+#     ports:
+#       - "3307:3306"
+#     environment:
+#       MYSQL_ROOT_PASSWORD: root
+#       MYSQL_DATABASE: wms_db_eda
+#       MYSQL_USER: wms_user
+#       MYSQL_PASSWORD: wms_password
+#     volumes:
+#       - wms_mysql_eda_data:/var/lib/mysql
+#     command: --default-authentication-plugin=caching_sha2_password
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     networks:
+#       - wms-network
+
+volumes:
+  wms_mysql_eda_data:
+    driver: local
+
+networks:
+  wms-network:
+    driver: bridge
