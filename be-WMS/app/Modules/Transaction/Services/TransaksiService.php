@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use App\Modules\Transaction\Events\TransactionApproved;
+use App\Modules\Inventory\Models\Barang;
 
 class TransaksiService implements TransactionServiceInterface
 {
@@ -124,60 +126,26 @@ class TransaksiService implements TransactionServiceInterface
             return false;
         }
 
-        $result = DB::transaction(function () use ($transaksi) {
+        // Pre-validation: Cek stok (Sync) sebelum dilempar ke EDA
+        if ($transaksi->jenis === 'keluar') {
+            $barang = Barang::find($transaksi->barang_id);
+            if (!$barang || $barang->stok < $transaksi->jumlah) {
+                throw new \Exception("Stok tidak mencukupi (Tersedia: {$barang->stok})");
+            }
+        }
+
+        DB::transaction(function () use ($transaksi) {
             $transaksi->update([
                 'status' => 'diterima',
                 'approved_by' => Auth::id(),
                 'approved_at' => now(),
             ]);
 
-            $fifoDetail = [];
-
-            if ($transaksi->jenis === 'masuk') {
-                // BARANG MASUK → Buat batch baru
-                $this->inventoryService->tambahStok(
-                    $transaksi->barang_id,
-                    $transaksi->jumlah,
-                    [
-                        'transaksi_masuk_id' => $transaksi->id,
-                        'tanggal_masuk' => $transaksi->tanggal,
-                        'supplier_id' => $transaksi->supplier_id,
-                        'harga_satuan' => $transaksi->harga_satuan ?? 0,
-                        'gudang_id' => $transaksi->gudang_id,
-                        'keterangan' => $transaksi->keterangan,
-                    ]
-                );
-            } elseif ($transaksi->jenis === 'keluar') {
-                // BARANG KELUAR → Kurangi dari batch tertua (FIFO)
-                $res = $this->inventoryService->kurangiStok(
-                    $transaksi->barang_id,
-                    $transaksi->jumlah,
-                    $transaksi->id
-                );
-
-                if ($res === false) {
-                    throw new \Exception('Stok tidak mencukupi untuk transaksi keluar.');
-                }
-
-                $fifoDetail = $res['fifo_detail'] ?? [];
-            }
-
-            // Log activity
-            ActivityLog::log(
-                'approve_transaksi',
-                'transaction',
-                'Menyetujui transaksi ' . $transaksi->kode_transaksi . ' (' . $transaksi->jenis . ', ' . $transaksi->jumlah . ' unit)',
-                $transaksi
-            );
-
-            return ['fifo_detail' => $fifoDetail];
+            // EDA: Dispatch event untuk diproses secara asinkron
+            TransactionApproved::dispatch($transaksi, Auth::id());
         });
 
-        // Generate PDF OUTSIDE transaction to avoid holding DB locks during slow I/O
-        if ($transaksi->jenis === 'keluar') {
-            $invoiceGenerated = $this->generateInvoiceKeluar($transaksi, $result['fifo_detail']);
-            $transaksi->update(['invoice_generated' => $invoiceGenerated]);
-        }
+        // Catatan: Inventory update, Logging, dan PDF Generation sekarang dilakukan oleh Listeners (EDA)
 
         $transaksi->load(['barang', 'supplier', 'customer', 'approvedByUser', 'gudang']);
 

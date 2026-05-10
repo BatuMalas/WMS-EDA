@@ -10,7 +10,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 // ─── Environment ─────────────────────────────────────────────
-export const BASE_URL = __ENV.BASE_URL || 'http://localhost:8000/api';
+export const BASE_URL = __ENV.BASE_URL || 'http://localhost:8001/api';
 
 // ─── Akun Test ───────────────────────────────────────────────
 // Staff account (untuk membuat transaksi)

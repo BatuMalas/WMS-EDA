@@ -27,14 +27,17 @@ services:
       DB_PASSWORD: root
       JWT_SECRET: K4Si9vNYmdFYtwfMrF7IR1yq9JxsrgcJXlresry5b2JdwJ4waHFZuDpwfdeUatOp
       JWT_ALGO: HS256
-      SESSION_DRIVER: cookie
-      CACHE_STORE: array
-      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: database
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
     volumes:
       - .:/var/www
     # depends_on:
     #   mysql:
     #     condition: service_healthy
+    depends_on:
+      - redis
     networks:
       - wms-network
     # ─── Resource Limits (Variabel Kontrol Tesis) ─────────────
@@ -73,11 +76,11 @@ services:
       JWT_ALGO: HS256
     volumes:
       - .:/var/www
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      - redis
     networks:
       - wms-network
     deploy:

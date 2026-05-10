@@ -68,10 +68,11 @@ class ActivityLog extends Model
         string $module,
         string $description,
         ?Model $subject = null,
-        ?array $properties = null
+        ?array $properties = null,
+        ?int $userId = null
     ): self {
         return static::create([
-            'user_id' => auth()->id(),
+            'user_id' => $userId ?? auth()->id(),
             'action' => $action,
             'module' => $module,
             'description' => $description,
