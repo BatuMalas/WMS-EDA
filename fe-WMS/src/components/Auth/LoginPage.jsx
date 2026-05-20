@@ -107,11 +107,11 @@ export default function LoginPage() {
                                     </Button>
                                 </Form>
 
-                                <div className="mt-4 text-center">
+                                {/* <div className="mt-4 text-center">
                                     <small className="text-muted d-block">Admin: admin / password</small>
                                     <small className="text-muted d-block">Manajer: manajer / password</small>
                                     <small className="text-muted d-block">Petugas: petugas / password</small>
-                                </div>
+                                </div> */}
                             </Card.Body>
                         </Card>
 
