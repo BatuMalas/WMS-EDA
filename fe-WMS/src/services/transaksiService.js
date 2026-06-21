@@ -1,8 +1,8 @@
 import api from "./api";
 
 const TransaksiService = {
-  // Get all transaksi
-  getAll: () => api.get("/transaksi"),
+  // Get all transaksi (with optional filters: jenis, status, limit)
+  getAll: (params = {}) => api.get("/transaksi", { params }),
 
   // Get single transaksi
   getById: (id) => api.get(`/transaksi/${id}`),

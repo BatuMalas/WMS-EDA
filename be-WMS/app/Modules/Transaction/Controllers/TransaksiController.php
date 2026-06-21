@@ -17,9 +17,15 @@ class TransaksiController extends Controller
         protected TransactionServiceInterface $transaksiService
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $transaksi = $this->transaksiService->getAll();
+        $filters = [
+            'jenis' => $request->query('jenis'),
+            'status' => $request->query('status'),
+            'per_page' => $request->query('per_page', 10),
+        ];
+
+        $transaksi = $this->transaksiService->getAll($filters);
 
         return $this->success($transaksi, 'Data transaksi berhasil diambil');
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, Table, Button, InputGroup, Form, Badge, Spinner, Modal } from "react-bootstrap";
-import { FaSearch, FaCheck, FaTimes, FaInfoCircle, FaTrash, FaExclamationCircle } from "react-icons/fa";
+import { FaSearch, FaCheck, FaTimes, FaInfoCircle, FaTrash, FaExclamationCircle, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { toast } from "react-toastify";
 import TransaksiService from "../../services/transaksiService";
 
@@ -13,13 +13,18 @@ export default function BarangMasukPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({ lastPage: 1, total: 0, from: 0, to: 0 });
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [currentPage]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const res = await TransaksiService.getAll();
-      setData(res.data.data.filter(t => t.jenis === "masuk"));
+      const res = await TransaksiService.getAll({ jenis: 'masuk', per_page: 10, page: currentPage });
+      const pg = res.data.data;
+      setData(pg.data);
+      setPagination({ lastPage: pg.last_page, total: pg.total, from: pg.from || 0, to: pg.to || 0 });
     } catch { toast.error("Gagal memuat data"); }
     finally { setLoading(false); }
   };
@@ -29,6 +34,17 @@ export default function BarangMasukPage() {
     (t.barang?.kode_barang || "").toLowerCase().includes(search.toLowerCase()) ||
     t.kode_transaksi.toLowerCase().includes(search.toLowerCase())
   );
+
+  const getPageNumbers = () => {
+    const { lastPage } = pagination;
+    if (lastPage <= 5) return Array.from({ length: lastPage }, (_, i) => i + 1);
+    const pages = new Set([1, lastPage]);
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(lastPage - 1, currentPage + 1); i++) pages.add(i);
+    const sorted = [...pages].sort((a, b) => a - b);
+    const result = [];
+    sorted.forEach((p, idx) => { if (idx > 0 && p - sorted[idx - 1] > 1) result.push("..."); result.push(p); });
+    return result;
+  };
 
   const handleApprove = (id) => {
     setConfirmAction("approve");
@@ -73,11 +89,12 @@ export default function BarangMasukPage() {
     return <Badge bg={map[status] || "secondary"} pill className="px-3 py-2 fw-normal">{status?.charAt(0).toUpperCase() + status?.slice(1)}</Badge>;
   };
 
-  if (loading) return <div className="text-center p-5"><Spinner animation="border" /></div>;
+  if (loading && data.length === 0) return <div className="text-center p-5"><Spinner animation="border" /></div>;
 
   return (
     <>
-      <h3 className="mb-4">📥 Data Barang Masuk</h3>
+      <h3 className="mb-1">📥 Data Barang Masuk</h3>
+      <p className="text-muted mb-4"><small>Menampilkan 10 data per halaman — prioritas: belum diverifikasi</small></p>
       <Card className="shadow-sm border-0" style={{ borderRadius: "16px" }}>
         <Card.Body>
           <div className="d-flex justify-content-end mb-3">
@@ -97,7 +114,7 @@ export default function BarangMasukPage() {
             <tbody>
               {filtered.map((t, i) => (
                 <tr key={t.id}>
-                  <td>{i + 1}</td>
+                  <td>{(pagination.from || 0) + i}</td>
                   <td>{new Date(t.tanggal).toLocaleDateString("id-ID")}</td>
                   <td><Badge bg="secondary" pill className="px-3 py-2 fw-normal">{t.barang?.kode_barang}</Badge></td>
                   <td>{t.barang?.nama}</td>
@@ -124,6 +141,32 @@ export default function BarangMasukPage() {
               {filtered.length === 0 && <tr><td colSpan={11} className="text-center text-muted">Tidak ada data</td></tr>}
             </tbody>
           </Table>
+
+          {/* Pagination Controls */}
+          {pagination.lastPage > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+              <small className="text-muted">
+                Menampilkan {pagination.from}–{pagination.to} dari {pagination.total} data
+              </small>
+              <div className="d-flex align-items-center gap-1">
+                <Button size="sm" variant="outline-primary" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                  <FaChevronLeft className="me-1" /> Previous
+                </Button>
+                {getPageNumbers().map((p, idx) =>
+                  p === "..." ? (
+                    <span key={`dots-${idx}`} className="px-2 text-muted">…</span>
+                  ) : (
+                    <Button key={p} size="sm" variant={p === currentPage ? "primary" : "outline-primary"} onClick={() => setCurrentPage(p)} style={{ minWidth: 36 }}>
+                      {p}
+                    </Button>
+                  )
+                )}
+                <Button size="sm" variant="outline-primary" disabled={currentPage === pagination.lastPage} onClick={() => setCurrentPage(p => p + 1)}>
+                  Next <FaChevronRight className="ms-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </Card.Body>
       </Card>
 

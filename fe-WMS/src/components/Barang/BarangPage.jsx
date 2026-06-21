@@ -542,38 +542,39 @@ export default function BarangPage() {
             </Table>
           )}
 
-          <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-            <div className="text-muted small">
-              Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredBarang.length)} dari {filteredBarang.length} barang
-            </div>
-            {totalPages > 1 && (
-              <div className="d-flex gap-2">
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-pill px-3"
-                  title="Sebelumnya"
-                >
-                  <FaChevronLeft size={12} />
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+              <small className="text-muted">
+                Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredBarang.length)} dari {filteredBarang.length} barang
+              </small>
+              <div className="d-flex align-items-center gap-1">
+                <Button size="sm" variant="outline-primary" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                  <FaChevronLeft className="me-1" /> Previous
                 </Button>
-                <div className="d-flex align-items-center px-2 small fw-bold">
-                  {currentPage} / {totalPages}
-                </div>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="rounded-pill px-3"
-                  title="Selanjutnya"
-                >
-                  <FaChevronRight size={12} />
+                {(() => {
+                  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+                  const pages = new Set([1, totalPages]);
+                  for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.add(i);
+                  const sorted = [...pages].sort((a, b) => a - b);
+                  const result = [];
+                  sorted.forEach((p, idx) => { if (idx > 0 && p - sorted[idx - 1] > 1) result.push("..."); result.push(p); });
+                  return result;
+                })().map((p, idx) =>
+                  p === "..." ? (
+                    <span key={`dots-${idx}`} className="px-2 text-muted">…</span>
+                  ) : (
+                    <Button key={p} size="sm" variant={p === currentPage ? "primary" : "outline-primary"} onClick={() => setCurrentPage(p)} style={{ minWidth: 36 }}>
+                      {p}
+                    </Button>
+                  )
+                )}
+                <Button size="sm" variant="outline-primary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                  Next <FaChevronRight className="ms-1" />
                 </Button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </Card.Body>
       </Card>
 

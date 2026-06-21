@@ -2,6 +2,18 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
+  # ── cAdvisor: CPU, Memory, Network per container ──
   - job_name: 'cadvisor'
     static_configs:
       - targets: ['cadvisor:8080']
+
+  # ── Laravel App: HTTP metrics (req/s, latency, error rate) ──
+  - job_name: 'laravel-app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['app:8000']
+
+  # ── Redis Exporter: Redis metrics (clients, memory) ──
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']

@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
     
     // API middleware TANPA throttle
     $middleware->api([
+        \App\Http\Middleware\PrometheusMetrics::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ]);
 })

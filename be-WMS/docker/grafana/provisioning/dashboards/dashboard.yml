@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'WMS Dashboards'
+    orgId: 1
+    folder: 'WMS'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true        # ← penting: perubahan dari UI ikut tersimpan ke file
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
+      foldersFromFilesStructure: false

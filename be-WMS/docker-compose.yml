@@ -34,11 +34,11 @@ services:
     volumes:
       - .:/var/www
       - vendor_eda:/var/www/vendor   # ← vendor di Docker volume, bukan Windows filesystem
-    # depends_on:
-    #   mysql:
-    #     condition: service_healthy
     depends_on:
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - wms-network
     # ─── Resource Limits (Variabel Kontrol Tesis) ─────────────
@@ -78,11 +78,11 @@ services:
     volumes:
       - .:/var/www
       - vendor_eda:/var/www/vendor   # ← shared volume vendor dengan app
-    # depends_on:
-    #   mysql:
-    #     condition: service_healthy
     depends_on:
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - wms-network
     deploy:
@@ -103,27 +103,27 @@ services:
     networks:
       - wms-network
 
-#   mysql:
-#     image: mysql:8.0
-#     container_name: wms-mysql-eda
-#     restart: unless-stopped
-#     ports:
-#       - "3307:3306"
-#     environment:
-#       MYSQL_ROOT_PASSWORD: root
-#       MYSQL_DATABASE: wms_db_eda
-#       MYSQL_USER: wms_user
-#       MYSQL_PASSWORD: wms_password
-#     volumes:
-#       - wms_mysql_eda_data:/var/lib/mysql
-#     command: --default-authentication-plugin=caching_sha2_password
-#     healthcheck:
-#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-#     networks:
-#       - wms-network
+  mysql:
+    image: mysql:8.0
+    container_name: wms-mysql-eda
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wms_db_eda
+      MYSQL_USER: wms_user
+      MYSQL_PASSWORD: wms_password
+    volumes:
+      - wms_mysql_eda_data:/var/lib/mysql
+    command: --default-authentication-plugin=caching_sha2_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wms-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -145,6 +145,10 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - grafana_data:/var/lib/grafana                                          # ← data persistent (dashboard, user, dll)
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro             # ← provisioning datasource & dashboard
     depends_on:
       - prometheus
     networks:
@@ -168,11 +172,25 @@ services:
     networks:
       - wms-network
 
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: wms-redis-exporter
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - wms-network
 
 volumes:
   vendor_eda:              # Named volume untuk folder vendor (mencegah I/O lambat dari Windows)
     driver: local
   wms_mysql_eda_data:
+    driver: local
+  grafana_data:            # Named volume untuk data Grafana (dashboard, user, plugin tidak hilang saat restart)
     driver: local
 
 networks:

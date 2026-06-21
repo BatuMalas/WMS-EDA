@@ -25,9 +25,27 @@ class TransaksiService implements TransactionServiceInterface
         $this->inventoryService = $inventoryService;
     }
 
-    public function getAll()
+    public function getAll(array $filters = [])
     {
-        return Transaksi::with(['barang', 'supplier', 'customer', 'approvedByUser', 'gudang'])->latest()->get();
+        $query = Transaksi::with(['barang', 'supplier', 'customer', 'approvedByUser', 'gudang']);
+
+        // Filter by jenis (masuk/keluar)
+        if (!empty($filters['jenis'])) {
+            $query->where('jenis', $filters['jenis']);
+        }
+
+        // Filter by status (pending/diterima/ditolak)
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Prioritaskan data pending di atas, lalu terbaru
+        $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+              ->latest();
+
+        $perPage = (int) ($filters['per_page'] ?? 10);
+
+        return $query->paginate($perPage);
     }
 
     public function getById(int $id)

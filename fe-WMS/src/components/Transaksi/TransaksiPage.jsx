@@ -29,6 +29,8 @@ import {
   FaTrash,
   FaTruck,
   FaCalendarAlt,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import api from "../../services/api";
 import BarangService from "../../services/barangService";
@@ -54,6 +56,10 @@ export default function TransaksiPage() {
   const [search, setSearch] = useState("");
   const [filterJenis, setFilterJenis] = useState("all");
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({ lastPage: 1, total: 0, from: 0, to: 0 });
+
   // Form
   const [form, setForm] = useState({
     jenis: "masuk",
@@ -72,17 +78,20 @@ export default function TransaksiPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const [transRes, barangRes, supplierRes, gudangRes] = await Promise.all([
-        api.get("/transaksi"),
+        api.get("/transaksi", { params: { per_page: 10, page: currentPage } }),
         api.get("/barang"),
         api.get("/supplier"),
         GudangService.getAll(),
       ]);
-      setTransaksi(transRes.data.data || []);
+      const pg = transRes.data.data;
+      setTransaksi(pg.data || []);
+      setPagination({ lastPage: pg.last_page, total: pg.total, from: pg.from || 0, to: pg.to || 0 });
       setBarangList(barangRes.data.data || []);
       setSupplierList(supplierRes.data.data || []);
       setGudangList(gudangRes.data.data || []);
@@ -91,6 +100,17 @@ export default function TransaksiPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getPageNumbers = () => {
+    const { lastPage } = pagination;
+    if (lastPage <= 5) return Array.from({ length: lastPage }, (_, i) => i + 1);
+    const pages = new Set([1, lastPage]);
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(lastPage - 1, currentPage + 1); i++) pages.add(i);
+    const sorted = [...pages].sort((a, b) => a - b);
+    const result = [];
+    sorted.forEach((p, idx) => { if (idx > 0 && p - sorted[idx - 1] > 1) result.push("..."); result.push(p); });
+    return result;
   };
 
   const generateKodeTransaksi = useCallback(() => {
@@ -264,6 +284,7 @@ export default function TransaksiPage() {
           </h1>
           <p className="text-muted">
             Kelola barang masuk & keluar — FIFO otomatis, invoice digital
+            <br /><small className="text-info">📋 Menampilkan 10 transaksi per halaman (prioritas: belum diverifikasi)</small>
           </p>
         </Col>
         <Col className="text-end">
@@ -348,9 +369,9 @@ export default function TransaksiPage() {
         <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
           <h5 className="mb-0">
             <FaHistory className="me-2" />
-            Riwayat Transaksi
+            Riwayat Transaksi <small className="fw-normal opacity-75">(Hal. {currentPage}/{pagination.lastPage})</small>
           </h5>
-          <Badge bg="light" text="dark">{filteredTransaksi.length} transaksi</Badge>
+          <Badge bg="light" text="dark">{pagination.total} total transaksi</Badge>
         </Card.Header>
         <Card.Body>
           {loading ? (
@@ -443,6 +464,32 @@ export default function TransaksiPage() {
                 ))}
               </tbody>
             </Table>
+          )}
+
+          {/* Pagination Controls */}
+          {pagination.lastPage > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+              <small className="text-muted">
+                Menampilkan {pagination.from}–{pagination.to} dari {pagination.total} data
+              </small>
+              <div className="d-flex align-items-center gap-1">
+                <Button size="sm" variant="outline-primary" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                  <FaChevronLeft className="me-1" /> Previous
+                </Button>
+                {getPageNumbers().map((p, idx) =>
+                  p === "..." ? (
+                    <span key={`dots-${idx}`} className="px-2 text-muted">…</span>
+                  ) : (
+                    <Button key={p} size="sm" variant={p === currentPage ? "primary" : "outline-primary"} onClick={() => setCurrentPage(p)} style={{ minWidth: 36 }}>
+                      {p}
+                    </Button>
+                  )
+                )}
+                <Button size="sm" variant="outline-primary" disabled={currentPage === pagination.lastPage} onClick={() => setCurrentPage(p => p + 1)}>
+                  Next <FaChevronRight className="ms-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </Card.Body>
       </Card>

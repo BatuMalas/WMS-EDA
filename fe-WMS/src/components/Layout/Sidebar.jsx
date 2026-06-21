@@ -19,7 +19,7 @@ export default function Sidebar() {
       { path: "/users", icon: <FaUsers />, label: "Data Pengguna", color: "danger" },
       { path: "/supplier", icon: <FaTruck />, label: "Data Supplier", color: "info" },
       { path: "/customer", icon: <FaUserFriends />, label: "Data Customer", color: "success" },
-      { path: "/settings", icon: <FaCog />, label: "Pengaturan", color: "dark" },
+      // Pengaturan disembunyikan sementara - belum ada fungsinya
     ];
   } else if (isManajer()) {
     menuItems = [
@@ -31,7 +31,7 @@ export default function Sidebar() {
       { path: "/barang-keluar", icon: <FaArrowUp />, label: "Data Barang Keluar", color: "danger" },
       { path: "/stok-barang", icon: <FaChartBar />, label: "Data Stok Barang", color: "secondary" },
       { path: "/gudang", icon: <FaWarehouse />, label: "Gudang", color: "teal" },
-      { path: "/settings", icon: <FaCog />, label: "Pengaturan", color: "dark" },
+      // Pengaturan disembunyikan sementara - belum ada fungsinya
     ];
   } else if (isPetugas()) {
     menuItems = [

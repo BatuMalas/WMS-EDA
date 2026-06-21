@@ -38,8 +38,10 @@ export default function BarangMasukForm() {
       setBarangs(bRes.data.data);
       setSuppliers(sRes.data.data);
       setGudangs(gRes.data.data || []);
-      setRecentData(tRes.data.data.filter(t => t.jenis === "masuk").slice(0, 5));
-      const count = tRes.data.data.filter(t => t.jenis === "masuk").length;
+      // TransaksiService.getAll() returns paginated data: tRes.data.data is pagination object, tRes.data.data.data is the actual array
+      const transaksiList = tRes.data.data.data || tRes.data.data || [];
+      setRecentData(transaksiList.filter(t => t.jenis === "masuk").slice(0, 5));
+      const count = transaksiList.filter(t => t.jenis === "masuk").length;
       setForm(f => ({ ...f, kode_transaksi: `TRM-${String(count + 1).padStart(4, "0")}` }));
     }).catch(() => toast.error("Gagal memuat data"))
       .finally(() => setLoading(false));
@@ -71,7 +73,8 @@ export default function BarangMasukForm() {
       });
       // Refresh recent
       const tRes = await TransaksiService.getAll();
-      setRecentData(tRes.data.data.filter(t => t.jenis === "masuk").slice(0, 5));
+      const transaksiList = tRes.data.data.data || tRes.data.data || [];
+      setRecentData(transaksiList.filter(t => t.jenis === "masuk").slice(0, 5));
     } catch (err) { toast.error(err.response?.data?.message || "Gagal menyimpan"); }
     finally { setSubmitting(false); }
   };

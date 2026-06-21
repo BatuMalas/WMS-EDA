@@ -14,7 +14,7 @@
 
 param(
   [string]$Only = "ALL",
-  [string]$BaseUrl = "http://localhost:8000/api",
+  [string]$BaseUrl = "http://localhost:8001/api",
   [string]$StaffUser = "petugas1",
   [string]$StaffPass = "password",
   [string]$ManajerUser = "manajer1",
@@ -54,7 +54,7 @@ if (-not (Test-Path $resultsDir)) {
 }
 
 # --- Header ---
-Write-Header "WMS MODULAR MONOLITH - LOAD TEST SUITE"
+Write-Header "WMS EDA - LOAD TEST SUITE"
 Write-Host "  Base URL  : $BaseUrl" -ForegroundColor White
 Write-Host "  Timestamp : $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor White
 Write-Host "  Mode      : $Only" -ForegroundColor White
@@ -63,7 +63,8 @@ Write-Host "  Mode      : $Only" -ForegroundColor White
 try {
   $k6Version = & k6 version 2>&1
   Write-OK "k6 ditemukan: $k6Version"
-} catch {
+}
+catch {
   Write-Fail "k6 tidak ditemukan!"
   Write-Host "  Install: winget install k6 --source winget" -ForegroundColor DarkYellow
   Write-Host "  Atau download: https://dl.k6.io/msi/k6-latest-amd64.msi" -ForegroundColor DarkYellow
@@ -75,7 +76,8 @@ Write-Step "Memeriksa koneksi ke backend..."
 try {
   $null = Invoke-WebRequest -Uri "$BaseUrl/auth/login" -Method GET -TimeoutSec 5 -ErrorAction Stop
   Write-OK "Backend merespons di $BaseUrl"
-} catch {
+}
+catch {
   Write-Host "  [WARN] Backend belum merespons di $BaseUrl" -ForegroundColor DarkYellow
   Write-Host "    Pastikan: docker compose up -d (di folder be-WMS)" -ForegroundColor DarkYellow
   $confirm = Read-Host "  Lanjutkan tetap? (y/N)"
@@ -96,9 +98,9 @@ function Invoke-K6Test {
   Write-Host "  Mulai  : $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor DarkGray
   Write-Host ""
 
-  $env:BASE_URL     = $BaseUrl
-  $env:STAFF_USER   = $StaffUser
-  $env:STAFF_PASS   = $StaffPass
+  $env:BASE_URL = $BaseUrl
+  $env:STAFF_USER = $StaffUser
+  $env:STAFF_PASS = $StaffPass
   $env:MANAJER_USER = $ManajerUser
   $env:MANAJER_PASS = $ManajerPass
 
@@ -108,11 +110,12 @@ function Invoke-K6Test {
   & k6 run --out "json=$OutputFile" --summary-export "$summaryFile" $ScriptPath
 
   $exitCode = $LASTEXITCODE
-  $elapsed  = [math]::Round((Get-Date - $startTime).TotalSeconds, 1)
+  $elapsed = [math]::Round((Get-Date - $startTime).TotalSeconds, 1)
 
   if ($exitCode -eq 0) {
     Write-OK "$Label - SELESAI dalam ${elapsed}s (threshold terpenuhi)"
-  } else {
+  }
+  else {
     Write-Host "  [WARN] $Label - SELESAI dalam ${elapsed}s (ada threshold yang tidak terpenuhi)" -ForegroundColor DarkYellow
   }
 
@@ -124,15 +127,15 @@ function Invoke-K6Test {
 $timestamp = Get-Date -Format "yyyyMMdd-HHmm"
 
 $scenarios = @(
-  @{ Label="UC-01 Inbound | 50 RPS";   Script="scripts/uc01-inbound-50rps.js";   Output="$resultsDir/uc01-50rps-$timestamp.json";   UC="UC01" },
-  @{ Label="UC-01 Inbound | 100 RPS";  Script="scripts/uc01-inbound-100rps.js";  Output="$resultsDir/uc01-100rps-$timestamp.json";  UC="UC01" },
-  @{ Label="UC-01 Inbound | 200 RPS";  Script="scripts/uc01-inbound-200rps.js";  Output="$resultsDir/uc01-200rps-$timestamp.json";  UC="UC01" },
-  @{ Label="UC-02 Stock Adj | 50 RPS"; Script="scripts/uc02-stock-50rps.js";     Output="$resultsDir/uc02-50rps-$timestamp.json";   UC="UC02" },
-  @{ Label="UC-02 Stock Adj | 100 RPS";Script="scripts/uc02-stock-100rps.js";    Output="$resultsDir/uc02-100rps-$timestamp.json";  UC="UC02" },
-  @{ Label="UC-02 Stock Adj | 200 RPS";Script="scripts/uc02-stock-200rps.js";    Output="$resultsDir/uc02-200rps-$timestamp.json";  UC="UC02" },
-  @{ Label="UC-03 Outbound | 50 RPS";  Script="scripts/uc03-outbound-50rps.js";  Output="$resultsDir/uc03-50rps-$timestamp.json";   UC="UC03" },
-  @{ Label="UC-03 Outbound | 100 RPS"; Script="scripts/uc03-outbound-100rps.js"; Output="$resultsDir/uc03-100rps-$timestamp.json";  UC="UC03" },
-  @{ Label="UC-03 Outbound | 200 RPS"; Script="scripts/uc03-outbound-200rps.js"; Output="$resultsDir/uc03-200rps-$timestamp.json";  UC="UC03" }
+  @{ Label = "UC-01 Inbound | 50 RPS"; Script = "scripts/uc01-inbound-50rps.js"; Output = "$resultsDir/uc01-50rps-$timestamp.json"; UC = "UC01" },
+  @{ Label = "UC-01 Inbound | 100 RPS"; Script = "scripts/uc01-inbound-100rps.js"; Output = "$resultsDir/uc01-100rps-$timestamp.json"; UC = "UC01" },
+  @{ Label = "UC-01 Inbound | 200 RPS"; Script = "scripts/uc01-inbound-200rps.js"; Output = "$resultsDir/uc01-200rps-$timestamp.json"; UC = "UC01" },
+  @{ Label = "UC-02 Stock Adj | 50 RPS"; Script = "scripts/uc02-stock-50rps.js"; Output = "$resultsDir/uc02-50rps-$timestamp.json"; UC = "UC02" },
+  @{ Label = "UC-02 Stock Adj | 100 RPS"; Script = "scripts/uc02-stock-100rps.js"; Output = "$resultsDir/uc02-100rps-$timestamp.json"; UC = "UC02" },
+  @{ Label = "UC-02 Stock Adj | 200 RPS"; Script = "scripts/uc02-stock-200rps.js"; Output = "$resultsDir/uc02-200rps-$timestamp.json"; UC = "UC02" },
+  @{ Label = "UC-03 Outbound | 50 RPS"; Script = "scripts/uc03-outbound-50rps.js"; Output = "$resultsDir/uc03-50rps-$timestamp.json"; UC = "UC03" },
+  @{ Label = "UC-03 Outbound | 100 RPS"; Script = "scripts/uc03-outbound-100rps.js"; Output = "$resultsDir/uc03-100rps-$timestamp.json"; UC = "UC03" },
+  @{ Label = "UC-03 Outbound | 200 RPS"; Script = "scripts/uc03-outbound-200rps.js"; Output = "$resultsDir/uc03-200rps-$timestamp.json"; UC = "UC03" }
 )
 
 # --- Filter berdasarkan -Only ---

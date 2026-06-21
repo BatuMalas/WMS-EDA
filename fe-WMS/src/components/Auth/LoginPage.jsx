@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
-import { FaWarehouse, FaSignInAlt } from "react-icons/fa";
+import { FaSignInAlt } from "react-icons/fa";
+import StockifyMain from "../../assets/Stockify-main.png";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -43,8 +44,8 @@ export default function LoginPage() {
                 <Row className="justify-content-center">
                     <Col md={5} lg={4}>
                         <div className="text-center mb-4">
-                            <FaWarehouse size={48} className="text-white mb-3" />
-                            <h2 className="text-white fw-bold">WMS Login (EDA)</h2>
+                            <img src={StockifyMain} alt="Stockify Logo" height="120" className="mb-3" />
+                            {/* <h2 className="text-white fw-bold">Login (EDA)</h2> */}
                             <p className="text-white-50">Warehouse Management System</p>
                         </div>
 

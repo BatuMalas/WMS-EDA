@@ -3,7 +3,8 @@ import {
   Navbar as BSNavbar, Container, Nav, Badge, Dropdown,
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { FaWarehouse, FaBell, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaBell, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import StockifySide from "../../assets/Stockify-side.png";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Navbar() {
@@ -20,24 +21,15 @@ export default function Navbar() {
       style={{ zIndex: 1030, height: "64px" }}>
       <Container fluid className="px-4 py-2">
         <BSNavbar.Brand as={Link} to="/" className="fw-bold text-dark d-flex align-items-center">
-          <div className="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style={{ width: 32, height: 32 }}>
-            <FaWarehouse size={16} />
-          </div>
-          WMS
+          <img src={StockifySide} alt="Stockify Logo" height="46" className="me-2" />
+
         </BSNavbar.Brand>
 
         <BSNavbar.Toggle aria-controls="navbar-nav" />
 
         <BSNavbar.Collapse id="navbar-nav" className="justify-content-end">
           <Nav className="align-items-center">
-            <Nav.Link as={Link} to="/notifications" className="position-relative me-4 text-muted">
-              <FaBell size={20} />
-              <Badge bg="danger" pill
-                className="position-absolute top-0 start-100 translate-middle border border-white"
-                style={{ fontSize: "9px" }}>
-                1
-              </Badge>
-            </Nav.Link>
+            {/* Notifikasi disembunyikan sementara - belum ada fungsinya */}
 
             <Dropdown align="end">
               <Dropdown.Toggle variant="link" className="d-flex align-items-center text-decoration-none text-dark p-0 border-0">
@@ -52,7 +44,7 @@ export default function Navbar() {
 
               <Dropdown.Menu>
                 <Dropdown.Item as={Link} to="/profile">Profile</Dropdown.Item>
-                <Dropdown.Item as={Link} to="/settings">Settings</Dropdown.Item>
+                {/* Settings disembunyikan sementara - belum ada fungsinya */}
                 <Dropdown.Divider />
                 <Dropdown.Item onClick={handleLogout} className="text-danger">
                   <FaSignOutAlt className="me-2" />Logout
