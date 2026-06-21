@@ -45,4 +45,9 @@ interface TransactionServiceInterface
      * Mutasi stok terbaru (transaksi approved).
      */
     public function getRecentMutations(int $limit = 10, ?string $startDate = null, ?string $endDate = null): array;
+
+    /**
+     * Hitung profit/loss bulan ini.
+     */
+    public function getMonthlyProfit(): array;
 }

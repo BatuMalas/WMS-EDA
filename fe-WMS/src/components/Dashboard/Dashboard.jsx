@@ -3,7 +3,8 @@ import { Row, Col, Card, Spinner, Table, Badge, ProgressBar, InputGroup, Form } 
 import {
   FaBoxes, FaMoneyBillWave, FaExclamationTriangle, FaExchangeAlt,
   FaArrowDown, FaArrowUp, FaClock, FaTruck, FaUsers, FaUserFriends,
-  FaHistory, FaChartLine, FaUserCircle, FaCalendarAlt, FaSearch
+  FaHistory, FaChartLine, FaUserCircle, FaCalendarAlt, FaSearch,
+  FaArrowCircleUp, FaArrowCircleDown
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import DashboardService from "../../services/dashboardService";
@@ -422,6 +423,61 @@ export default function Dashboard() {
           />
         </Row>
 
+        {/* Section 1b: Monthly Profit/Loss */}
+        {data?.monthly_profit && (
+          <Row className="mb-4">
+            <Col md={4}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderRadius: "16px" }}>
+                <Card.Body className="p-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <div className="d-flex align-items-center justify-content-center text-white me-2 rounded-circle shadow-sm"
+                      style={{ width: "36px", height: "36px", backgroundColor: "#14b8a6" }}>
+                      <FaArrowCircleDown size={18} />
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "#14b8a6" }}>Pendapatan Bulan Ini</h6>
+                  <h2 className="fw-bolder text-dark mb-1" style={{ fontSize: "1.8rem" }}>{formatRupiah(data.monthly_profit.total_pendapatan)}</h2>
+                  <small className="text-muted">Total penjualan (barang keluar)</small>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderRadius: "16px" }}>
+                <Card.Body className="p-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <div className="d-flex align-items-center justify-content-center text-white me-2 rounded-circle shadow-sm"
+                      style={{ width: "36px", height: "36px", backgroundColor: "#ef4444" }}>
+                      <FaArrowCircleUp size={18} />
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "#ef4444" }}>Pengeluaran Bulan Ini</h6>
+                  <h2 className="fw-bolder text-dark mb-1" style={{ fontSize: "1.8rem" }}>{formatRupiah(data.monthly_profit.total_pengeluaran)}</h2>
+                  <small className="text-muted">Total pembelian (barang masuk)</small>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderRadius: "16px", borderLeft: `4px solid ${data.monthly_profit.is_profit ? '#10b981' : '#ef4444'}` }}>
+                <Card.Body className="p-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <div className="d-flex align-items-center justify-content-center text-white me-2 rounded-circle shadow-sm"
+                      style={{ width: "36px", height: "36px", backgroundColor: data.monthly_profit.is_profit ? "#10b981" : "#ef4444" }}>
+                      <FaChartLine size={18} />
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: data.monthly_profit.is_profit ? "#10b981" : "#ef4444" }}>
+                    {data.monthly_profit.is_profit ? "📈 Profit Bulan Ini" : "📉 Rugi Bulan Ini"}
+                  </h6>
+                  <h2 className="fw-bolder mb-1" style={{ fontSize: "1.8rem", color: data.monthly_profit.is_profit ? "#10b981" : "#ef4444" }}>
+                    {data.monthly_profit.is_profit ? "+" : "-"}{formatRupiah(Math.abs(data.monthly_profit.profit))}
+                  </h2>
+                  <small className="text-muted">{data.monthly_profit.bulan}</small>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
         {/* Section 2: Inventory Flow Chart */}
         <Row className="mb-4">
           <Col xs={12}>
@@ -515,6 +571,61 @@ export default function Dashboard() {
             subtitle="Barang di bawah stok minimum"
           />
         </Row>
+
+        {/* Monthly Profit/Loss */}
+        {data?.monthly_profit && (
+          <Row className="mb-4">
+            <Col md={4}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderRadius: "16px" }}>
+                <Card.Body className="p-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <div className="d-flex align-items-center justify-content-center text-white me-2 rounded-circle shadow-sm"
+                      style={{ width: "36px", height: "36px", backgroundColor: "#14b8a6" }}>
+                      <FaArrowCircleDown size={18} />
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "#14b8a6" }}>Pendapatan Bulan Ini</h6>
+                  <h2 className="fw-bolder text-dark mb-1" style={{ fontSize: "1.8rem" }}>{formatRupiah(data.monthly_profit.total_pendapatan)}</h2>
+                  <small className="text-muted">Total penjualan (barang keluar)</small>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderRadius: "16px" }}>
+                <Card.Body className="p-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <div className="d-flex align-items-center justify-content-center text-white me-2 rounded-circle shadow-sm"
+                      style={{ width: "36px", height: "36px", backgroundColor: "#ef4444" }}>
+                      <FaArrowCircleUp size={18} />
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "#ef4444" }}>Pengeluaran Bulan Ini</h6>
+                  <h2 className="fw-bolder text-dark mb-1" style={{ fontSize: "1.8rem" }}>{formatRupiah(data.monthly_profit.total_pengeluaran)}</h2>
+                  <small className="text-muted">Total pembelian (barang masuk)</small>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderRadius: "16px", borderLeft: `4px solid ${data.monthly_profit.is_profit ? '#10b981' : '#ef4444'}` }}>
+                <Card.Body className="p-4">
+                  <div className="d-flex align-items-center mb-2">
+                    <div className="d-flex align-items-center justify-content-center text-white me-2 rounded-circle shadow-sm"
+                      style={{ width: "36px", height: "36px", backgroundColor: data.monthly_profit.is_profit ? "#10b981" : "#ef4444" }}>
+                      <FaChartLine size={18} />
+                    </div>
+                  </div>
+                  <h6 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: data.monthly_profit.is_profit ? "#10b981" : "#ef4444" }}>
+                    {data.monthly_profit.is_profit ? "📈 Profit Bulan Ini" : "📉 Rugi Bulan Ini"}
+                  </h6>
+                  <h2 className="fw-bolder mb-1" style={{ fontSize: "1.8rem", color: data.monthly_profit.is_profit ? "#10b981" : "#ef4444" }}>
+                    {data.monthly_profit.is_profit ? "+" : "-"}{formatRupiah(Math.abs(data.monthly_profit.profit))}
+                  </h2>
+                  <small className="text-muted">{data.monthly_profit.bulan}</small>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
 
         <Row className="mb-4">
           <Col xs={12}>

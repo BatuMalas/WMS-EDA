@@ -442,13 +442,16 @@ export default function TransaksiPage() {
                       </small>
                     </td>
                     <td>
-                      {(item.invoice_file || item.invoice_generated) ? (
+                      {item.status === "diterima" && item.jenis === "keluar" ? (
+                        <div className="d-flex gap-1">
+                          <Button variant="outline-success" size="sm" onClick={() => handleDownloadInvoice(item.id)} title="Download Invoice PDF">
+                            <FaFilePdf />
+                          </Button>
+                        </div>
+                      ) : (item.invoice_file || item.invoice_generated) ? (
                         <div className="d-flex gap-1">
                           <Button variant="outline-primary" size="sm" onClick={() => handleViewInvoice(item)} title="Lihat Invoice">
                             <FaEye />
-                          </Button>
-                          <Button variant="outline-success" size="sm" onClick={() => handleDownloadInvoice(item.id)} title="Download Invoice">
-                            <FaDownload />
                           </Button>
                         </div>
                       ) : (

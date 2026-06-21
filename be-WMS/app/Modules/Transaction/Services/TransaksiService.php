@@ -481,5 +481,41 @@ class TransaksiService implements TransactionServiceInterface
             ])
             ->toArray();
     }
+
+    /**
+     * Hitung profit/loss bulan ini berdasarkan transaksi yang disetujui.
+     * Profit = total penjualan (keluar * harga_jual) - total pembelian (masuk * harga_beli)
+     */
+    public function getMonthlyProfit(): array
+    {
+        $month = Carbon::now()->month;
+        $year = Carbon::now()->year;
+
+        // Total pendapatan dari barang keluar bulan ini (harga_satuan * jumlah)
+        $totalPendapatan = Transaksi::where('jenis', 'keluar')
+            ->where('status', 'diterima')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->selectRaw('COALESCE(SUM(harga_satuan * jumlah), 0) as total')
+            ->value('total');
+
+        // Total pengeluaran dari barang masuk bulan ini (harga_satuan * jumlah)
+        $totalPengeluaran = Transaksi::where('jenis', 'masuk')
+            ->where('status', 'diterima')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->selectRaw('COALESCE(SUM(harga_satuan * jumlah), 0) as total')
+            ->value('total');
+
+        $profit = (float) $totalPendapatan - (float) $totalPengeluaran;
+
+        return [
+            'bulan' => Carbon::now()->translatedFormat('F Y'),
+            'total_pendapatan' => (float) $totalPendapatan,
+            'total_pengeluaran' => (float) $totalPengeluaran,
+            'profit' => $profit,
+            'is_profit' => $profit >= 0,
+        ];
+    }
 }
 

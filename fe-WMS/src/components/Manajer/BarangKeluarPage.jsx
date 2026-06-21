@@ -165,9 +165,9 @@ export default function BarangKeluarPage() {
                         <Button size="sm" variant="outline-danger" className="me-1" onClick={() => handleReject(t.id)} title="Tolak"><FaTimes /></Button>
                       </>
                     )}
-                    {t.status === "diterima" && (t.invoice_generated || t.invoice_file) && (
-                      <Button size="sm" variant="outline-primary" className="me-1" onClick={() => handleDownloadInvoice(t.id)} title="Download Invoice">
-                        <FaDownload />
+                    {t.status === "diterima" && (
+                      <Button size="sm" variant="outline-primary" className="me-1" onClick={() => handleDownloadInvoice(t.id)} title="Download Invoice PDF">
+                        <FaFilePdf />
                       </Button>
                     )}
                     {t.status !== "diterima" && (
@@ -231,9 +231,9 @@ export default function BarangKeluarPage() {
           )}
         </Modal.Body>
         <Modal.Footer>
-          {selected?.status === "diterima" && (selected.invoice_generated || selected.invoice_file) && (
+          {selected?.status === "diterima" && (
             <Button variant="primary" onClick={() => handleDownloadInvoice(selected.id)}>
-              <FaDownload className="me-2" />Download Invoice
+              <FaFilePdf className="me-2" />Download Invoice PDF
             </Button>
           )}
           <Button variant="secondary" onClick={() => setShowInfo(false)}>Tutup</Button>

@@ -39,11 +39,13 @@ export default function BarangKeluarForm() {
       setBarangs(bRes.data.data);
       setCustomers(cRes.data.data);
       setGudangs(gRes.data.data || []);
-      // TransaksiService.getAll() returns paginated data: tRes.data.data is pagination object, tRes.data.data.data is the actual array
-      const transaksiList = tRes.data.data.data || tRes.data.data || [];
+      // TransaksiService.getAll() returns paginated data
+      const paginationData = tRes.data.data;
+      const transaksiList = paginationData.data || paginationData || [];
       setRecentData(transaksiList.filter(t => t.jenis === "keluar").slice(0, 5));
-      const count = transaksiList.filter(t => t.jenis === "keluar").length;
-      setForm(f => ({ ...f, kode_transaksi: `TRK-${String(count + 1).padStart(4, "0")}` }));
+      // Gunakan total dari pagination agar kode tidak duplikat
+      const totalKeluar = paginationData.total || transaksiList.length;
+      setForm(f => ({ ...f, kode_transaksi: `TRK-${String(totalKeluar + 1).padStart(4, "0")}` }));
     }).catch(() => toast.error("Gagal memuat data"))
       .finally(() => setLoading(false));
   }, []);
@@ -74,6 +76,12 @@ export default function BarangKeluarForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validasi: harga jual tidak boleh di bawah harga beli
+    const barangDipilih = barangs.find(b => String(b.id) === String(form.barang_id));
+    if (barangDipilih?.harga_terakhir > 0 && Number(form.harga_satuan) < Number(barangDipilih.harga_terakhir)) {
+      toast.error(`Harga jual tidak boleh di bawah harga beli (Rp ${Number(barangDipilih.harga_terakhir).toLocaleString("id-ID")})`);
+      return;
+    }
     setSubmitting(true);
     try {
       const formData = new FormData();
@@ -87,18 +95,19 @@ export default function BarangKeluarForm() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Barang keluar berhasil dicatat (menunggu approval Manajer)");
-      const count = recentData.length + 1;
+      setGudangAvailable([]);
+      const tRes = await TransaksiService.getAll();
+      const paginationData = tRes.data.data;
+      const transaksiList = paginationData.data || paginationData || [];
+      const totalKeluar = paginationData.total || transaksiList.length;
+      setRecentData(transaksiList.filter(t => t.jenis === "keluar").slice(0, 5));
       setForm({
-        kode_transaksi: `TRK-${String(count + 1).padStart(4, "0")}`,
+        kode_transaksi: `TRK-${String(totalKeluar + 1).padStart(4, "0")}`,
         jenis: "keluar",
         tanggal: new Date().toISOString().split("T")[0],
         barang_id: "", jumlah: "", harga_satuan: "",
         customer_id: "", gudang_id: "", gudang_rak: "", keterangan: "",
       });
-      setGudangAvailable([]);
-      const tRes = await TransaksiService.getAll();
-      const transaksiList = tRes.data.data.data || tRes.data.data || [];
-      setRecentData(transaksiList.filter(t => t.jenis === "keluar").slice(0, 5));
     } catch (err) { toast.error(err.response?.data?.message || "Gagal menyimpan"); }
     finally { setSubmitting(false); }
   };
@@ -150,8 +159,23 @@ export default function BarangKeluarForm() {
                 </Form.Group>
               </Col>
               <Col md={3}>
-                <Form.Group className="mb-3"><Form.Label>Harga Jual</Form.Label>
-                  <Form.Control type="number" min={0} value={form.harga_satuan} onChange={e => setForm({ ...form, harga_satuan: e.target.value })} /></Form.Group>
+                <Form.Group className="mb-3"><Form.Label>Harga Jual *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min={selectedBarang?.harga_terakhir || 0}
+                    required
+                    value={form.harga_satuan}
+                    onChange={e => setForm({ ...form, harga_satuan: e.target.value })}
+                    isInvalid={selectedBarang?.harga_terakhir > 0 && form.harga_satuan && Number(form.harga_satuan) < Number(selectedBarang.harga_terakhir)}
+                  />
+                  {selectedBarang?.harga_terakhir > 0 && (
+                    <Form.Text className={form.harga_satuan && Number(form.harga_satuan) < Number(selectedBarang.harga_terakhir) ? "text-danger fw-bold" : "text-muted"}>
+                      {form.harga_satuan && Number(form.harga_satuan) < Number(selectedBarang.harga_terakhir)
+                        ? `⚠️ Harga jual tidak boleh di bawah harga beli (Rp ${Number(selectedBarang.harga_terakhir).toLocaleString("id-ID")})`
+                        : `Harga beli: Rp ${Number(selectedBarang.harga_terakhir).toLocaleString("id-ID")}`}
+                    </Form.Text>
+                  )}
+                </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3">

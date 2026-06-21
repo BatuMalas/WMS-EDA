@@ -92,11 +92,11 @@ class DatabaseSeeder extends Seeder
         // ─── Barang ───
 
         $barangs = [
-            ['kode_barang' => 'BRG-001', 'nama' => 'Laptop Asus X515', 'satuan' => 'unit', 'kategori_id' => 1, 'stok' => 25, 'gudang_rak' => 'G1-R1', 'harga_beli' => 7500000, 'harga_jual' => 8500000, 'kadaluarsa' => null, 'stok_min' => 5, 'deskripsi' => 'Laptop Asus 15 inch, Intel i5'],
-            ['kode_barang' => 'BRG-002', 'nama' => 'Mouse Logitech M330', 'satuan' => 'pcs', 'kategori_id' => 1, 'stok' => 100, 'gudang_rak' => 'G1-R2', 'harga_beli' => 150000, 'harga_jual' => 200000, 'kadaluarsa' => null, 'stok_min' => 20, 'deskripsi' => 'Mouse wireless silent click'],
-            ['kode_barang' => 'BRG-003', 'nama' => 'Kertas HVS A4 70gsm', 'satuan' => 'rim', 'kategori_id' => 3, 'stok' => 200, 'gudang_rak' => 'G2-R1', 'harga_beli' => 35000, 'harga_jual' => 45000, 'kadaluarsa' => null, 'stok_min' => 50, 'deskripsi' => 'Kertas HVS putih 500 lembar'],
-            ['kode_barang' => 'BRG-004', 'nama' => 'Mie Instan Goreng', 'satuan' => 'karton', 'kategori_id' => 2, 'stok' => 150, 'gudang_rak' => 'G3-R1', 'harga_beli' => 85000, 'harga_jual' => 100000, 'kadaluarsa' => '2027-06-15', 'stok_min' => 30, 'deskripsi' => 'Mie instan goreng 40pcs/karton'],
-            ['kode_barang' => 'BRG-005', 'nama' => 'Semen Portland 50kg', 'satuan' => 'sak', 'kategori_id' => 4, 'stok' => 80, 'gudang_rak' => 'G4-R1', 'harga_beli' => 55000, 'harga_jual' => 70000, 'kadaluarsa' => '2027-12-01', 'stok_min' => 15, 'deskripsi' => 'Semen Portland tipe I'],
+            ['kode_barang' => 'BRG-001', 'nama' => 'Laptop Asus X515', 'satuan' => 'unit', 'kategori_id' => 1, 'stok' => 25, 'lokasi' => 'GD-A-L1-R1', 'harga_beli' => 7500000, 'harga_jual' => 8500000, 'kadaluarsa' => null, 'stok_min' => 5, 'deskripsi' => 'Laptop Asus 15 inch, Intel i5'],
+            ['kode_barang' => 'BRG-002', 'nama' => 'Mouse Logitech M330', 'satuan' => 'pcs', 'kategori_id' => 1, 'stok' => 100, 'lokasi' => 'GD-A-L1-R2', 'harga_beli' => 150000, 'harga_jual' => 200000, 'kadaluarsa' => null, 'stok_min' => 20, 'deskripsi' => 'Mouse wireless silent click'],
+            ['kode_barang' => 'BRG-003', 'nama' => 'Kertas HVS A4 70gsm', 'satuan' => 'rim', 'kategori_id' => 3, 'stok' => 200, 'lokasi' => 'GD-A-L2-R1', 'harga_beli' => 35000, 'harga_jual' => 45000, 'kadaluarsa' => null, 'stok_min' => 50, 'deskripsi' => 'Kertas HVS putih 500 lembar'],
+            ['kode_barang' => 'BRG-004', 'nama' => 'Mie Instan Goreng', 'satuan' => 'karton', 'kategori_id' => 2, 'stok' => 150, 'lokasi' => 'GD-B-L1-R1', 'harga_beli' => 85000, 'harga_jual' => 100000, 'kadaluarsa' => '2027-06-15', 'stok_min' => 30, 'deskripsi' => 'Mie instan goreng 40pcs/karton'],
+            ['kode_barang' => 'BRG-005', 'nama' => 'Semen Portland 50kg', 'satuan' => 'sak', 'kategori_id' => 4, 'stok' => 80, 'lokasi' => 'GD-B-L2-R1', 'harga_beli' => 55000, 'harga_jual' => 70000, 'kadaluarsa' => '2027-12-01', 'stok_min' => 15, 'deskripsi' => 'Semen Portland tipe I'],
         ];
 
         foreach ($barangs as $brg) {

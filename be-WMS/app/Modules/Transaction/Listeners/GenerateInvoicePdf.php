@@ -12,6 +12,12 @@ class GenerateInvoicePdf implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    /**
+     * Delay agar UpdateInventoryStock selesai membuat BatchOutflow terlebih dahulu.
+     * Tanpa delay, listener ini bisa berjalan paralel dan tidak menemukan data FIFO.
+     */
+    public int $delay = 5;
+
     protected TransactionServiceInterface $transactionService;
 
     /**
@@ -39,9 +45,10 @@ class GenerateInvoicePdf implements ShouldQueue
                 ->where('transaksi_keluar_id', $transaksi->id)
                 ->get()
                 ->map(fn($out) => [
-                    'kode_batch' => $out->stockBatch->kode_batch,
+                    'kode_batch' => $out->stockBatch->kode_batch ?? '-',
                     'diambil' => $out->jumlah,
-                    'tanggal_masuk' => $out->stockBatch->tanggal_masuk->format('Y-m-d'),
+                    'tanggal_masuk' => $out->stockBatch?->tanggal_masuk?->format('Y-m-d') ?? '-',
+                    'sisa_stok_batch' => $out->stockBatch?->sisa_stok ?? 0,
                 ])
                 ->toArray();
 

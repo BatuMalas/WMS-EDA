@@ -32,6 +32,7 @@ class Transaksi extends Model
         'invoice_number',
         'gudang_rak',
         'gudang_id',
+        'inventory_processed_at',
     ];
 
     protected $casts = [

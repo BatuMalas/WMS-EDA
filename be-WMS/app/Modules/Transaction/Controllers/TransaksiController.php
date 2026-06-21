@@ -177,10 +177,27 @@ class TransaksiController extends Controller
             return $this->notFound('Transaksi tidak ditemukan');
         }
 
+        if ($transaksi->status !== 'diterima' || $transaksi->jenis !== 'keluar') {
+            return $this->notFound('Invoice hanya tersedia untuk transaksi keluar yang sudah disetujui');
+        }
+
         $path = $transaksi->invoice_generated ?? $transaksi->invoice_file;
 
+        // Jika file belum ada, generate on-the-fly
         if (!$path || !Storage::disk('public')->exists($path)) {
-            return $this->notFound('Invoice tidak ditemukan');
+            $fifoDetail = \App\Modules\Inventory\Models\BatchOutflow::with('stockBatch')
+                ->where('transaksi_keluar_id', $transaksi->id)
+                ->get()
+                ->map(fn($out) => [
+                    'kode_batch' => $out->stockBatch->kode_batch ?? '-',
+                    'diambil' => $out->jumlah,
+                    'tanggal_masuk' => $out->stockBatch?->tanggal_masuk?->format('Y-m-d') ?? '-',
+                    'sisa_stok_batch' => $out->stockBatch?->sisa_stok ?? 0,
+                ])
+                ->toArray();
+
+            $path = $this->transaksiService->generateInvoiceKeluar($transaksi, $fifoDetail);
+            $transaksi->update(['invoice_generated' => $path]);
         }
 
         $fullPath = Storage::disk('public')->path($path);

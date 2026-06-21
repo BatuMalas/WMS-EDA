@@ -70,32 +70,39 @@ class RealisticDataSeeder extends Seeder
             ]);
         }
 
-        // ─── GUDANG (12 lokasi) ───
-        $gdgData = [
-            ['G1-R1','Gudang 1 Rak 1','Pupuk granul & sak besar'],
-            ['G1-R2','Gudang 1 Rak 2','Pupuk cair & daun'],
-            ['G1-R3','Gudang 1 Rak 3','Pupuk organik & dolomit'],
-            ['G2-R1','Gudang 2 Rak 1','Pestisida & herbisida cair'],
-            ['G2-R2','Gudang 2 Rak 2','Fungisida & insektisida'],
-            ['G3-R1','Gudang 3 Rak 1','Benih padi & palawija'],
-            ['G3-R2','Gudang 3 Rak 2','Benih sayuran & bibit'],
-            ['G4-R1','Gudang 4 Rak 1','Alat pertanian besar'],
-            ['G4-R2','Gudang 4 Rak 2','Alat pertanian kecil & polybag'],
-            ['G5-R1','Gudang 5 Rak 1','Suku cadang & sparepart'],
-            ['G6-R1','Gudang 6 Rak 1','Pakan ternak & obat hewan'],
-            ['G7-R1','Gudang 7 Rak 1','Perlengkapan irigasi & pipa'],
+        // ─── GUDANG (2 Gudang × 5 Lorong × 5 Rak = 50 lokasi) ───
+        $gudangMaster = [
+            ['GD-A', 'Gudang Utama', 'Gudang utama untuk penyimpanan produk pupuk, pestisida, benih, dan alat pertanian'],
+            ['GD-B', 'Gudang Tambahan', 'Gudang tambahan untuk penyimpanan pakan ternak, obat hewan, suku cadang, dan irigasi'],
         ];
+
         $gudangs = [];
-        foreach ($gdgData as $g) {
-            $gudangs[] = Gudang::updateOrCreate(['kode_gudang' => $g[0]], [
-                'kode_gudang' => $g[0], 'nama_gudang' => $g[1], 'deskripsi' => $g[2],
-            ]);
+        foreach ($gudangMaster as $gm) {
+            for ($lorong = 1; $lorong <= 5; $lorong++) {
+                for ($rak = 1; $rak <= 5; $rak++) {
+                    $kode = sprintf('%s-L%d-R%d', $gm[0], $lorong, $rak);
+                    $nama = sprintf('%s — Lorong %d, Rak %d', $gm[1], $lorong, $rak);
+                    $gudangs[] = Gudang::updateOrCreate(['kode_gudang' => $kode], [
+                        'kode_gudang' => $kode,
+                        'nama_gudang' => $nama,
+                        'deskripsi' => $gm[2],
+                    ]);
+                }
+            }
         }
 
-        // Map kategori_idx -> gudang indices
+        // Map kategori_idx -> gudang indices (distribusi ke rak-rak tertentu)
+        // GD-A (index 0-24): Pupuk, Pestisida, Benih, Alat Pertanian
+        // GD-B (index 25-49): Suku Cadang, Pakan Ternak, Obat Hewan, Irigasi
         $katGudangMap = [
-            0 => [0,1,2], 1 => [3,4], 2 => [5,6], 3 => [7,8],
-            4 => [9], 5 => [10], 6 => [10], 7 => [11],
+            0 => [0, 1, 2, 5, 6],        // Pupuk → GD-A L1-R1, L1-R2, L1-R3, L2-R1, L2-R2
+            1 => [3, 4, 7, 8],            // Pestisida → GD-A L1-R4, L1-R5, L2-R3, L2-R4
+            2 => [10, 11, 12, 15, 16],    // Benih → GD-A L3-R1, L3-R2, L3-R3, L4-R1, L4-R2
+            3 => [13, 14, 17, 18, 19],    // Alat Pertanian → GD-A L3-R4, L3-R5, L4-R3, L4-R4, L4-R5
+            4 => [25, 26, 27, 30, 31],    // Suku Cadang → GD-B L1-R1, L1-R2, L1-R3, L2-R1, L2-R2
+            5 => [28, 29, 32, 33, 34],    // Pakan Ternak → GD-B L1-R4, L1-R5, L2-R3, L2-R4, L2-R5
+            6 => [35, 36, 37, 38, 39],    // Obat Hewan → GD-B L3-R1 s/d L3-R5
+            7 => [40, 41, 42, 43, 44],    // Irigasi → GD-B L4-R1 s/d L4-R5
         ];
 
         // ─── SUPPLIER (10) ───
@@ -150,13 +157,19 @@ class RealisticDataSeeder extends Seeder
 
         $barangs = [];
         foreach ($products as $idx => $p) {
+            // Tentukan lokasi gudang berdasarkan kategori barang
+            $katIdx = $p[2];
+            $gdgIdxs = $katGudangMap[$katIdx];
+            $gdgIdx = $gdgIdxs[$idx % count($gdgIdxs)];
+            $lokasiGudang = $gudangs[$gdgIdx]->kode_gudang;
+
             $barangs[] = Barang::updateOrCreate(
                 ['kode_barang' => sprintf('BRG-%03d', $idx + 1)],
                 [
                     'kode_barang' => sprintf('BRG-%03d', $idx + 1),
                     'nama' => $p[0], 'satuan' => $p[1],
                     'kategori_id' => $kats[$p[2]]->id,
-                    'stok' => 0, 'lokasi' => '-',
+                    'stok' => 0, 'lokasi' => $lokasiGudang,
                     'harga_beli' => $p[3], 'harga_jual' => $p[4],
                     'kadaluarsa' => $p[5], 'stok_min' => $p[6],
                     'deskripsi' => $p[0], 'batas_aging_hari' => $p[7],
@@ -298,7 +311,7 @@ class RealisticDataSeeder extends Seeder
 
         $this->command->info('✅ Data realistis 200 barang berhasil di-seed!');
         $this->command->info('   Users: 1 admin + 3 manajer + 6 petugas (password: password)');
-        $this->command->info('   Kategori: ' . count($kats) . ' | Gudang: ' . count($gudangs));
+        $this->command->info('   Kategori: ' . count($kats) . ' | Gudang: 2 (GD-A, GD-B) × 5 Lorong × 5 Rak = ' . count($gudangs) . ' lokasi');
         $this->command->info('   Supplier: ' . count($suppliers) . ' | Customer: ' . count($customers));
         $this->command->info('   Barang: ' . count($barangs) . ' | Pending: 8');
     }

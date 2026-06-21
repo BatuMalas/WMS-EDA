@@ -38,11 +38,13 @@ export default function BarangMasukForm() {
       setBarangs(bRes.data.data);
       setSuppliers(sRes.data.data);
       setGudangs(gRes.data.data || []);
-      // TransaksiService.getAll() returns paginated data: tRes.data.data is pagination object, tRes.data.data.data is the actual array
-      const transaksiList = tRes.data.data.data || tRes.data.data || [];
+      // TransaksiService.getAll() returns paginated data: tRes.data.data is pagination object
+      const paginationData = tRes.data.data;
+      const transaksiList = paginationData.data || paginationData || [];
       setRecentData(transaksiList.filter(t => t.jenis === "masuk").slice(0, 5));
-      const count = transaksiList.filter(t => t.jenis === "masuk").length;
-      setForm(f => ({ ...f, kode_transaksi: `TRM-${String(count + 1).padStart(4, "0")}` }));
+      // Gunakan total dari pagination agar kode tidak duplikat
+      const totalMasuk = paginationData.total || transaksiList.length;
+      setForm(f => ({ ...f, kode_transaksi: `TRM-${String(totalMasuk + 1).padStart(4, "0")}` }));
     }).catch(() => toast.error("Gagal memuat data"))
       .finally(() => setLoading(false));
   }, []);
@@ -62,19 +64,19 @@ export default function BarangMasukForm() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Barang masuk berhasil dicatat (menunggu approval Manajer)");
-      // Reset
-      const count = recentData.length + 1;
+      // Refresh recent
+      const tRes = await TransaksiService.getAll();
+      const paginationData = tRes.data.data;
+      const transaksiList = paginationData.data || paginationData || [];
+      const totalMasuk = paginationData.total || transaksiList.length;
+      setRecentData(transaksiList.filter(t => t.jenis === "masuk").slice(0, 5));
       setForm({
-        kode_transaksi: `TRM-${String(count + 1).padStart(4, "0")}`,
+        kode_transaksi: `TRM-${String(totalMasuk + 1).padStart(4, "0")}`,
         jenis: "masuk",
         tanggal: new Date().toISOString().split("T")[0],
         barang_id: "", jumlah: "", harga_satuan: "",
         supplier_id: "", gudang_id: "", gudang_rak: "", keterangan: "",
       });
-      // Refresh recent
-      const tRes = await TransaksiService.getAll();
-      const transaksiList = tRes.data.data.data || tRes.data.data || [];
-      setRecentData(transaksiList.filter(t => t.jenis === "masuk").slice(0, 5));
     } catch (err) { toast.error(err.response?.data?.message || "Gagal menyimpan"); }
     finally { setSubmitting(false); }
   };

@@ -56,6 +56,9 @@ class DashboardController extends Controller
             // ─── New: Supplier Ranking ───
             'top_suppliers' => $this->supplierService->getTopSuppliers(5),
 
+            // ─── New: Monthly Profit/Loss ───
+            'monthly_profit' => $this->transactionService->getMonthlyProfit(),
+
             // ─── New: Stock Mutations ───
             'recent_mutations' => $this->transactionService->getRecentMutations(10, $startDate, $endDate),
 
