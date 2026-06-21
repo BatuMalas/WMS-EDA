@@ -36,7 +36,7 @@ export const ADMIN_CREDENTIALS = {
 export const TOTAL_BARANG = 200;   // 200 produk pertanian
 export const TOTAL_SUPPLIER = 10;  // 10 supplier
 export const TOTAL_CUSTOMER = 10;  // 10 customer
-export const TOTAL_GUDANG = 3;     // 3 gudang
+export const TOTAL_GUDANG = 50;    // 2 gudang × 5 lorong × 5 rak
 export const TOTAL_USERS = 10;     // 1 admin + 3 manajer + 6 staff
 
 // ─── Stages Configuration ────────────────────────────────────

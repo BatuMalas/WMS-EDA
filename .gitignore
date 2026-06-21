@@ -1,6 +1,19 @@
-.env
-.idea/
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# Antigravity
+.antigravityignore
+
+# ─── Backend (Laravel) ───
+.env
 node_modules/
 vendor/
 dist/
@@ -11,4 +24,10 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 auth.json
-.DS_Store
+be-WMS/storage/app/public/invoices/
+
+# Docker volumes
+be-WMS/wms_mysql_data/
+
+# ─── Load Test Results ───
+load-test/results/
